@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Form, Input, Button, Checkbox, Divider } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { UserOutlined, LockOutlined, ReadOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
           <div className="max-w-md text-white">
             <div className="mb-12">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-white rounded-lg mr-4"></div>
+                <ReadOutlined className="text-white text-2xl mr-4" />
                 <h1 className="text-2xl font-bold">学生课堂学习质量分析系统</h1>
               </div>
               <p className="text-lg opacity-90">智能分析 · 全面评估 · 精准洞察</p>
@@ -81,7 +81,7 @@ export default function LoginPage() {
             </div>
             
             <div className="text-sm opacity-70 mt-16">
-              © 2023 学生课堂学习质量分析系统 版权所有
+              © 2025 浙江科技大学·应谢吾 版权所有
             </div>
           </div>
         </div>
@@ -187,4 +187,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}
