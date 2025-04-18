@@ -1,13 +1,19 @@
-import Link from 'next/link';
+import Link from "next/link";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-4xl font-bold mb-4">404</h1>
-      <p className="text-xl mb-8">页面未找到</p>
-      <Link href="/" className="text-blue-500 hover:underline">
-        返回首页
-      </Link>
+    <div className="flex justify-center items-center min-h-screen p-4">
+      <div className="w-full max-w-md text-center p-8 border rounded-lg shadow-sm bg-white h-48 mb-12">
+        <h2 className="text-2xl font-bold mb-2">404</h2>
+        <p className="text-gray-500 mb-6">页面未找到</p>
+        <Link 
+          href="/" 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 no-underline"
+        >
+          返回首页
+        </Link>
+      </div>
     </div>
   );
-} 
+}

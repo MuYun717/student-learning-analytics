@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   ];
 
   return (
-    <Layout style={{ maxHeight: "100vh" }}>
+    <Layout style={{ maxHeight: "100vh",overflow:"auto" }}>
       <Sider
         trigger={null}
         collapsible
@@ -72,7 +72,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             marginLeft: '20px',
             height: '64px',
             lineHeight: '64px',
-            overflow: 'hidden',
             whiteSpace: 'nowrap',
             textOverflow: 'ellipsis'
         }}>
@@ -141,7 +140,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             padding: 24,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
-            minHeight: 280,
+            minHeight:"auto",
+            overflow:'visible'
           }}
         >
           {children}

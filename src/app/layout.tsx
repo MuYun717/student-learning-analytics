@@ -18,12 +18,12 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className="h-screen overflow-hidden">
-      <body id="root">
+    <html lang="zh-CN" className="h-screen">
+      <body id="root" style={{ backgroundColor: 'rgb(245, 245, 245)' }}>
         <StyledComponentsRegistry>
           <AuthProvider>{children}</AuthProvider>
         </StyledComponentsRegistry>
       </body>
     </html>
   );
-} 
+}
