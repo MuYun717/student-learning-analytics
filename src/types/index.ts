@@ -20,10 +20,9 @@ export interface Student {
   id: string;
   name: string;
   studentId: string;
-  email: string;
-  grade?: string;
-  classGroup?: string;
-  phoneNumber?: string;
+  email?: string;
+  classGroup: string;  // 从可选改为必填
+  phoneNumber: string; // 从可选改为必填
   avatar?: string;
 }
 
@@ -70,4 +69,4 @@ export interface CourseReport {
 export interface LoginCredentials {
   email: string;
   password: string;
-} 
+}
