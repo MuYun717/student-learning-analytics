@@ -190,15 +190,14 @@ export default function StudentsPage() {
             >
               批量导入
             </Button>
-            <Dragger
-              ref={uploadRef}
+            {/* <Dragger
               accept=".xlsx,.xls"
               showUploadList={false}
               onChange={handleExcelImport}
               style={{ display: 'none' }}
             >
               <input type="file" style={{ display: 'none' }} />
-            </Dragger>
+            </Dragger> */}
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
@@ -238,13 +237,12 @@ export default function StudentsPage() {
           />
 
           {/* 隐藏的上传组件 */}
-          <Dragger
-            ref={uploadRef}
+          {/* <Dragger
             accept=".xlsx,.xls"
             showUploadList={false}
             onChange={handleExcelImport}
             style={{ display: 'none' }}
-          />
+          /> */}
         </Card>
 
         <Modal
