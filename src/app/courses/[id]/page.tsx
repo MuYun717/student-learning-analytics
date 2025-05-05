@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import {
@@ -155,7 +156,6 @@ const CourseDetailPage = () => {
   const weekDays = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
   return (
-    <DashboardLayout>
     <div className="p-6">
       <Card>
         <div className="flex justify-between items-center mb-4">
@@ -323,7 +323,6 @@ const CourseDetailPage = () => {
         </Form>
       </Modal>
     </div>
-    </DashboardLayout>
   );
 };
 

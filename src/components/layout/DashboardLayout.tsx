@@ -11,6 +11,7 @@ import {
   TeamOutlined,
   UserOutlined,
   LogoutOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -97,6 +98,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               key: "/students",
               icon: <TeamOutlined />,
               label: <Link href="/students">学生管理</Link>,
+            },
+            {
+              key: "/teachers",
+              icon: <UserOutlined />,
+              label: <Link href="/teachers">教师信息</Link>,
+            },
+            {
+              key: "/teaching-quality-analysis",
+              icon: <BarChartOutlined />,
+              label: <Link href="/teaching-quality-analysis">教学质量分析</Link>,
             },
           ]}
         />

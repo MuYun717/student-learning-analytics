@@ -1,6 +1,5 @@
 "use client";
 
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -40,7 +39,6 @@ export default function Home() {
   if (!user) return null;
 
   return (
-    <DashboardLayout>
       <div className="space-y-8 p-6">
         <div>
           <h2 className="text-2xl font-bold mb-6">欢迎回来，{user.name}！</h2>
@@ -143,6 +141,5 @@ export default function Home() {
           </Col>
         </Row>
       </div>
-    </DashboardLayout>
   );
 }

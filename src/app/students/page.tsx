@@ -173,7 +173,6 @@ export default function StudentsPage() {
   ];
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">学生管理</h2>
@@ -286,6 +285,5 @@ export default function StudentsPage() {
           </Form>
         </Modal>
       </div>
-    </DashboardLayout>
   );
 }

@@ -57,7 +57,7 @@ export default function LoginPage() {
             <div className="mb-10">
               <h2 className="text-xl font-medium mb-4">全面提升教育质量</h2>
               <p className="text-base opacity-80 mb-6">
-                通过智能分析课堂数据，帮助教师了解学生学习情况，优化教学内容和方法，
+                通过YOLO AI分析课堂数据，帮助管理层了解教学质量情况，  优化教学内容和方法，
                 实现教育资源的最优配置，提高教学质量和学生满意度。
               </p>
               <div className="grid grid-cols-2 gap-6">

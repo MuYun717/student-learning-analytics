@@ -47,7 +47,6 @@ export default function CoursesPage() {
   };
 
   return (
-    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">课程管理</h2>
@@ -110,6 +109,5 @@ export default function CoursesPage() {
           ))}
         </Row>
       </div>
-    </DashboardLayout>
   );
 } 
