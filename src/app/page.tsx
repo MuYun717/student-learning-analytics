@@ -16,7 +16,7 @@ export default function Home() {
   const stats = getStatistics();
 
   // 模拟数据
-  const attendanceData = [
+  const attendanceData: {name: string; 出勤率: number}[] = [
     { name: '周一', 出勤率: 95 },
     { name: '周二', 出勤率: 89 },
     { name: '周三', 出勤率: 92 },
@@ -24,7 +24,7 @@ export default function Home() {
     { name: '周五', 出勤率: 90 },
   ];
 
-  const qualityData = [
+  const qualityData: {name: string; value: number}[] = [
     { name: '优秀', value: 35 },
     { name: '良好', value: 40 },
     { name: '一般', value: 15 },
@@ -114,7 +114,7 @@ export default function Home() {
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {qualityData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

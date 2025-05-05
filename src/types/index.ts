@@ -21,6 +21,7 @@ export interface Student {
   name: string;
   studentId: string;
   email?: string;
+  grade: string;
   classGroup: string;  // 从可选改为必填
   phoneNumber: string; // 从可选改为必填
   avatar?: string;

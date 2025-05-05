@@ -79,7 +79,7 @@ export default function StudentsPage() {
         const jsonData = XLSX.utils.sheet_to_json<Student>(firstSheet);
         
         // 验证数据格式
-        const validatedData = jsonData.map((item, index) => ({
+        const validatedData = jsonData.map((item: any, index: number) => ({
           ...item,
           id: `import-${Date.now()}-${index}`,
           studentId: item.studentId?.toString() || '',

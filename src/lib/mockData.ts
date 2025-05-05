@@ -11,6 +11,8 @@ export interface Student {
   id: string;
   name: string;
   studentId: string;
+  email?: string;
+  grade: string;
   classGroup: string;
   phoneNumber: string;
   avatar?: string;
@@ -66,6 +68,8 @@ export const mockStudents: Student[] = [
     id: "s1",
     name: "张三",
     studentId: "2021001",
+    email: "s1@example.com",
+    grade: "大一",
     classGroup: "计算机2101",
     phoneNumber: "13900139001",
   },
@@ -73,6 +77,8 @@ export const mockStudents: Student[] = [
     id: "s2",
     name: "李四",
     studentId: "2021002",
+    email: "s2@example.com",
+    grade: "大一",
     classGroup: "计算机2101",
     phoneNumber: "13900139002",
   },
@@ -80,6 +86,8 @@ export const mockStudents: Student[] = [
     id: "s3",
     name: "王五",
     studentId: "2021003",
+    email: "s3@example.com",
+    grade: "大一",
     classGroup: "计算机2102",
     phoneNumber: "13900139003",
   },
@@ -209,4 +217,4 @@ export const loginMock = (credentials: { email: string; password: string }): Log
     success: false,
     message: '用户名或密码错误',
   };
-}; 
+};

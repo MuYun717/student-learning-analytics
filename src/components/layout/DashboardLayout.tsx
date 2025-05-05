@@ -80,8 +80,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[pathname ?? "/"]}
-          defaultOpenKeys={["courses"]}
+          selectedKeys={[pathname ? pathname.split('/').slice(0, 2).join('/') : "/"]}
+          defaultOpenKeys={[]}
           items={[
             {
               key: "/",
@@ -149,4 +149,4 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </Layout>
     </Layout>
   );
-} 
+}
