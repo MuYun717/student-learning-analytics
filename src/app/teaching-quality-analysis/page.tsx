@@ -177,7 +177,7 @@ const TeachingQualityAnalysis = () => {
                                 </Card>
                             </Col>
                             <Col span={8}>
-                                <Card>
+                                <Card style={{height:'100%'}}>
                                     <Statistic
                                         title="平均成绩"
                                         value={82.5}

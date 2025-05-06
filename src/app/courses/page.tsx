@@ -25,7 +25,7 @@ export default function CoursesPage() {
       case "active":
         return "green";
       case "completed":
-        return "blue";
+        return "gray";
       case "upcoming":
         return "orange";
       default:
