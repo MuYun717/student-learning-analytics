@@ -143,7 +143,7 @@ const TeachingQualityAnalysis = () => {
                     </Col>
                 </Row>
 
-                {selectedItem && (
+                {selectedItem ? (
                     <>
                         <Row gutter={16} className="mb-6">
                             <Col span={8}>
@@ -200,6 +200,18 @@ const TeachingQualityAnalysis = () => {
                             </Col>
                         </Row>
                     </>
+                ) : (
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '300px',
+                        color: 'rgba(0, 0, 0, 0.25)'
+                    }}>
+                        <BarChartOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+                        <p style={{ fontSize: '16px' }}>请选择筛选条件查看教学质量分析数据</p>
+                    </div>
                 )}
             </Card>
         </div>
