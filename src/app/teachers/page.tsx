@@ -39,7 +39,7 @@ const TeachersPage = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      if (values.name) {
+      if (values.id) {
         // 编辑
         await teacherAPI.update(values.name, values);
         message.success("更新成功");

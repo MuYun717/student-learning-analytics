@@ -19,6 +19,8 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
 
   return response.json();
 }
+
+// 外部API请求函数
 async function fetchOutAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   // 检查是否是FormData，如果是，则不设置Content-Type
   const isFormData = options.body instanceof FormData;
@@ -145,4 +147,38 @@ export const statisticsAPI = {
 // 课程记录相关API
 export const courseRecordAPI = {
   getCourseRecords: (courseId: string) => fetchOutAPI<CourseRecord[]>(`/course/queryRecords?courseID=${courseId}`),
+  getRecordImages: (courseId: string, recordId: string) => fetchOutAPI<string[]>(`/course/queryOriginalImage?courseID=${courseId}&recordID=${recordId}`),
+};
+
+// 课程学生管理相关API
+export const courseStudentAPI = {
+  getCourseStudents: (courseId: string) => fetchOutAPI<Student[]>(`/course/queryStudents?id=${courseId}`),
+  addStudentToCourse: (courseId: string, studentId: string) => {
+    const formData = new FormData();
+    formData.append('cid', courseId);
+    formData.append('sid', studentId);
+    return fetch('http://course-inspection.wjunzs.com:8080/course/addStudent', {
+      method: 'POST',
+      body: formData,
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(`添加学生请求失败: ${response.status}`);
+      }
+      return response;
+    });
+  },
+  removeStudentFromCourse: (courseId: string, studentId: string) => {
+    const formData = new FormData();
+    formData.append('cid', courseId);
+    formData.append('sid', studentId);
+    return fetch('http://course-inspection.wjunzs.com:8080/course/removeStudent', {
+      method: 'POST',
+      body: formData,
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(`移除学生请求失败: ${response.status}`);
+      }
+      return response;
+    });
+  }
 }; 

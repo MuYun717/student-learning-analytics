@@ -76,11 +76,11 @@ export default function StudentsPage() {
 
   // 获取所有班级选项
   const classOptions = Array.from(
-    new Set(students.map(s => s.class))
+    new Set((students || []).map(s => s.class))
   ).map(c => ({ value: c, label: c }));
 
   // 筛选学生
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = (students || []).filter(student => 
     (student.name.toLowerCase().includes(searchText.toLowerCase()) ||
      student.id.toLowerCase().includes(searchText.toLowerCase())) &&
     (classFilter === "all" || student.class === classFilter)
@@ -231,16 +231,6 @@ export default function StudentsPage() {
 
   // 表格列定义
   const columns = [
-    {
-      title: "头像",
-      dataIndex: "avatar",
-      key: "avatar",
-      render: (avatar: string) => (
-        avatar ? 
-        <Image src={avatar} alt="头像" width={40} height={40} style={{borderRadius: '50%'}} /> :
-        <PictureOutlined style={{fontSize: 24}} />
-      )
-    },
     {
       title: "姓名",
       dataIndex: "name",

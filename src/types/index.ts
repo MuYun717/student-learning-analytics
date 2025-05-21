@@ -85,14 +85,22 @@ export interface CourseSchedule {
   endTime: string; // "HH:MM"格式
 }
 
+export interface StudentData {
+  id: string;
+  name: string;
+  class?: string;
+  phoneNumber?: string;
+}
+
 export interface CourseRecord {
   course_id: string;
   record_id: string;
   create_at: string;
+  finish_at: string;
   teacher: string;
-  students: string[];
-  latecomer: string[];
-  early_leaver: string[];
-  attendees: string[];
+  students: (string | StudentData)[];
+  latecomer: (string | StudentData)[] | null;
+  early_leaver: (string | StudentData)[] | null;
+  attendees: (string | StudentData)[];
   detecting: boolean;
 }
