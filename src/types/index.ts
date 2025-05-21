@@ -19,12 +19,12 @@ export interface Teacher {
 export interface Student {
   id: string;
   name: string;
-  studentId: string;
+  studentId?: string;  // 可能不是必须的，因为在创建时API只需要id、name、class和phone
   email?: string;
-  grade: string;
-  classGroup: string;  // 从可选改为必填
-  phoneNumber: string; // 从可选改为必填
-  avatar?: string;
+  grade?: string;      // API中未提及
+  class: string;  // 对应API中的class字段
+  phoneNumber: string; // 对应API中的phone字段
+  avatar?: string;     // 头像URL
 }
 
 export interface Course {
@@ -70,4 +70,29 @@ export interface CourseReport {
 export interface LoginCredentials {
   email: string;
   password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  user?: User;
+  message?: string;
+  token?: string;
+}
+
+export interface CourseSchedule {
+  dayOfWeek: number; // 0-6，0表示周日
+  startTime: string; // "HH:MM"格式
+  endTime: string; // "HH:MM"格式
+}
+
+export interface CourseRecord {
+  course_id: string;
+  record_id: string;
+  create_at: string;
+  teacher: string;
+  students: string[];
+  latecomer: string[];
+  early_leaver: string[];
+  attendees: string[];
+  detecting: boolean;
 }

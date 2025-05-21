@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import {
@@ -17,15 +16,26 @@ import {
   Table,
   Tag,
   message,
+  Badge,
+  Descriptions,
+  Space,
 } from "antd";
 import {
   EditOutlined,
   ClockCircleOutlined,
   TeamOutlined,
   UserOutlined,
+  HistoryOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  SyncOutlined,
+  PlayCircleOutlined,
+  StopOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { mockCourses, mockTeachers, mockStudents, Course, Teacher, CourseSchedule } from "@/lib/mockData";
+import { courseRecordAPI } from "@/lib/api";
+import { CourseRecord } from "@/types";
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
@@ -36,6 +46,11 @@ const CourseDetailPage = () => {
   const params = useParams();
   const [course, setCourse] = useState<Course | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [courseRecords, setCourseRecords] = useState<CourseRecord[]>([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
+  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -45,6 +60,93 @@ const CourseDetailPage = () => {
       setCourse(foundCourse);
     }
   }, [params.id]);
+
+  // 获取课程记录数据
+  useEffect(() => {
+    if (params.id) {
+      fetchCourseRecords(params.id as string);
+    }
+  }, [params.id]);
+
+  // 检查课程记录中是否有正在进行的监控
+  useEffect(() => {
+    const hasActiveMonitoring = courseRecords.some(record => record.detecting === true);
+    setIsMonitoring(hasActiveMonitoring);
+  }, [courseRecords]);
+
+  // 获取课程记录
+  const fetchCourseRecords = async (courseId: string) => {
+    try {
+      setRecordsLoading(true);
+      const records = await courseRecordAPI.getCourseRecords(courseId);
+      setCourseRecords(records);
+    } catch (error) {
+      console.error("获取课程记录失败:", error);
+      message.error("获取课程记录失败");
+    } finally {
+      setRecordsLoading(false);
+    }
+  };
+
+  // 开始课程监控
+  const startMonitoring = async () => {
+    if (!course) return;
+    
+    try {
+      setMonitoringLoading(true);
+      
+      const formData = new FormData();
+      formData.append('id', course.id);
+      
+      const response = await fetch('http://course-inspection.wjunzs.com:8080/course/startMonitoring', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+      
+      message.success("课程监控已开始");
+      // 刷新课程记录
+      await fetchCourseRecords(course.id);
+    } catch (error) {
+      console.error("开始课程监控失败:", error);
+      message.error("开始课程监控失败");
+    } finally {
+      setMonitoringLoading(false);
+    }
+  };
+  
+  // 结束课程监控
+  const stopMonitoring = async () => {
+    if (!course) return;
+    
+    try {
+      setMonitoringLoading(true);
+      
+      const formData = new FormData();
+      formData.append('id', course.id);
+      
+      const response = await fetch('http://course-inspection.wjunzs.com:8080/course/stopMonitoring', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+      
+      message.success("课程监控已结束");
+      // 刷新课程记录
+      await fetchCourseRecords(course.id);
+    } catch (error) {
+      console.error("结束课程监控失败:", error);
+      message.error("结束课程监控失败");
+    } finally {
+      setMonitoringLoading(false);
+    }
+  };
 
   if (!course) {
     return <div>加载中...</div>;
@@ -127,6 +229,155 @@ const CourseDetailPage = () => {
     },
   ];
 
+  // 课堂记录表格列定义
+  const recordColumns = [
+    {
+      title: "记录ID",
+      dataIndex: "record_id",
+      key: "record_id",
+      width: 250,
+      ellipsis: true,
+    },
+    {
+      title: "创建时间",
+      dataIndex: "create_at",
+      key: "create_at",
+      render: (text: string) => dayjs(text).format("YYYY-MM-DD HH:mm:ss"),
+    },
+    {
+      title: "教师",
+      dataIndex: "teacher",
+      key: "teacher",
+    },
+    {
+      title: "状态",
+      dataIndex: "detecting",
+      key: "detecting",
+      render: (detecting: boolean) => detecting ? (
+        <Badge status="processing" text={<span style={{ color: "#1890ff" }}>进行中</span>} />
+      ) : (
+        <Badge status="success" text="已完成" />
+      ),
+    },
+    {
+      title: "出勤情况",
+      key: "attendance",
+      render: (_: any, record: CourseRecord) => {
+        const totalStudents = record.students.length;
+        const attendCount = record.attendees.length;
+        const attendRate = totalStudents > 0 ? Math.round((attendCount / totalStudents) * 100) : 0;
+        
+        return (
+          <Space>
+            <Tag color="green">{`出勤: ${attendCount}/${totalStudents}`}</Tag>
+            <Tag color={attendRate >= 80 ? "green" : attendRate >= 60 ? "orange" : "red"}>
+              {`${attendRate}%`}
+            </Tag>
+          </Space>
+        );
+      }
+    },
+  ];
+
+  // 课堂记录展开行内容
+  const expandedRowRender = (record: CourseRecord) => {
+    // 找出所有学生的详细信息
+    const studentMap = new Map();
+    mockStudents.forEach(student => {
+      studentMap.set(student.id, student);
+    });
+
+    // 计算学生出勤状态
+    const studentStatus = record.students.map(studentId => {
+      const student = studentMap.get(studentId) || { id: studentId, name: "未知学生" };
+      const isAttend = record.attendees.includes(studentId);
+      const isLatecomer = record.latecomer.includes(studentId);
+      const isEarlyLeaver = record.early_leaver.includes(studentId);
+      
+      // 如果学生既不在出勤、迟到和早退名单中，则标记为缺勤
+      const isAbsent = !isAttend && !isLatecomer && !isEarlyLeaver;
+
+      return {
+        key: studentId,
+        id: studentId,
+        name: student.name,
+        isAttend,
+        isLatecomer,
+        isEarlyLeaver,
+        isAbsent
+      };
+    });
+
+    // 学生出勤状态列
+    const studentStatusColumns = [
+      { title: "学号", dataIndex: "id", key: "id" },
+      { title: "姓名", dataIndex: "name", key: "name" },
+      { 
+        title: "状态", 
+        key: "status",
+        render: (_: any, record: any) => (
+          <Space>
+            {record.isAbsent && 
+              <Tag color="red" icon={<CloseCircleOutlined />}>缺勤</Tag>
+            }
+            {record.isAttend && !record.isAbsent && 
+              <Tag color="green" icon={<CheckCircleOutlined />}>出勤</Tag>
+            }
+            {record.isLatecomer && !record.isAbsent && 
+              <Tag color="orange" icon={<ClockCircleOutlined />}>迟到</Tag>
+            }
+            {record.isEarlyLeaver && !record.isAbsent && 
+              <Tag color="orange" icon={<ClockCircleOutlined />}>早退</Tag>
+            }
+          </Space>
+        )
+      }
+    ];
+
+    // 统计各种状态的学生人数
+    const totalStudents = record.students.length;
+    const attendCount = record.attendees.length;
+    const lateCount = record.latecomer.length;
+    const earlyLeaveCount = record.early_leaver.length;
+    const absentCount = studentStatus.filter(s => s.isAbsent).length;
+
+    return (
+      <div>
+        <Descriptions title="课堂详情" bordered column={2}>
+          <Descriptions.Item label="记录ID">{record.record_id}</Descriptions.Item>
+          <Descriptions.Item label="课程ID">{record.course_id}</Descriptions.Item>
+          <Descriptions.Item label="创建时间">
+            {dayjs(record.create_at).format("YYYY-MM-DD HH:mm:ss")}
+          </Descriptions.Item>
+          <Descriptions.Item label="状态">
+            {record.detecting ? (
+              <Tag icon={<SyncOutlined spin />} color="processing">课程进行中</Tag>
+            ) : (
+              <Tag icon={<CheckCircleOutlined />} color="success">已完成</Tag>
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label="学生总数">{totalStudents}</Descriptions.Item>
+          <Descriptions.Item label="出勤人数">{attendCount}
+          </Descriptions.Item>
+          <Descriptions.Item label="迟到人数">{lateCount}
+          </Descriptions.Item>
+          <Descriptions.Item label="早退人数">{earlyLeaveCount}
+          </Descriptions.Item>
+          <Descriptions.Item label="缺勤人数">{absentCount}
+          </Descriptions.Item>
+        </Descriptions>
+
+        <Title level={5} style={{ marginTop: 16 }}>学生出勤情况</Title>
+        <Table 
+          columns={studentStatusColumns} 
+          dataSource={studentStatus} 
+          pagination={false} 
+          size="small"
+        />
+      </div>
+    );
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -166,13 +417,35 @@ const CourseDetailPage = () => {
               {getStatusText(course.status)}
             </Tag>
           </div>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={handleEdit}
-          >
-            编辑课程
-          </Button>
+          <Space>
+            {isMonitoring ? (
+              <Button
+                type="primary"
+                danger
+                icon={<StopOutlined />}
+                loading={monitoringLoading}
+                onClick={stopMonitoring}
+              >
+                结束监控
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                icon={<PlayCircleOutlined />}
+                loading={monitoringLoading}
+                onClick={startMonitoring}
+              >
+                开始监控
+              </Button>
+            )}
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={handleEdit}
+            >
+              编辑课程
+            </Button>
+          </Space>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -240,6 +513,31 @@ const CourseDetailPage = () => {
                   dataSource={course.students}
                   columns={studentColumns}
                   rowKey="id"
+                />
+              ),
+            },
+            {
+              key: "3",
+              label: (
+                <span>
+                  <HistoryOutlined />
+                  课堂记录
+                </span>
+              ),
+              children: (
+                <Table
+                  dataSource={courseRecords}
+                  columns={recordColumns}
+                  rowKey="record_id"
+                  expandable={{
+                    expandedRowRender,
+                    rowExpandable: record => true,
+                    expandedRowKeys: expandedRowKeys,
+                    onExpand: (expanded, record) => {
+                      setExpandedRowKeys(expanded ? [record.record_id] : []);
+                    },
+                  }}
+                  loading={recordsLoading}
                 />
               ),
             },

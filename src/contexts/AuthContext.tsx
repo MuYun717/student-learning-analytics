@@ -1,55 +1,62 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
-import type { ReactNode } from "react";
-import { User } from "@/types";
-import { loginMock, LoginResponse } from "@/lib/mockData";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { User, LoginResponse } from "@/types";
+import { authAPI } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 检查本地存储中的用户信息
   useEffect(() => {
-    // 确保在客户端环境中执行
-    if (typeof window !== 'undefined') {
-      // 检查本地存储中是否有用户信息
-      const storedUser = localStorage.getItem("user");
-
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("Found stored user:", parsedUser);
-          setUser(parsedUser);
-        } catch (err) {
-          console.error("Error parsing stored user:", err);
-          localStorage.removeItem("user");
+    const checkAuth = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          // 验证token是否有效
+          const currentUser = await authAPI.getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+          } else {
+            // token无效，清除本地存储
+            localStorage.removeItem("user");
+            setUser(null);
+          }
         }
+      } catch (error) {
+        console.error("验证用户状态失败:", error);
+        localStorage.removeItem("user");
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
+    };
+
+    checkAuth();
   }, []);
 
-  const login = (email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log("Attempting login with:", email);
+      console.log("尝试登录:", email);
       
-      // 显式指定 loginMock 返回类型
-      const result: LoginResponse = loginMock({ email, password });
-      console.log("Login result:", result);
+      const result = await authAPI.login(email, password);
+      console.log("登录结果:", result);
       
       if (result.success && result.user) {
         const userData: User = {
@@ -59,29 +66,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: result.user.email,
         };
         
-        // 确保在客户端环境中执行
-        if (typeof window !== 'undefined') {
-          localStorage.setItem("user", JSON.stringify(userData));
+        // 保存token和用户信息
+        if (result.token) {
+          localStorage.setItem("token", result.token);
         }
+        localStorage.setItem("user", JSON.stringify(userData));
         
-        console.log("Setting user in state:", userData);
+        console.log("设置用户状态:", userData);
         setUser(userData);
       } else {
         setError(result.message || "登录失败，请检查您的凭据");
-        console.error("Login failed:", result.message);
+        console.error("登录失败:", result.message);
       }
     } catch (err) {
       setError("登录失败，请检查您的凭据");
-      console.error("Login error:", err);
+      console.error("登录错误:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    // 清除本地存储和状态
-    localStorage.removeItem("user");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error("登出错误:", error);
+    } finally {
+      // 无论API调用是否成功，都清除本地存储和状态
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+    }
   };
 
   return (

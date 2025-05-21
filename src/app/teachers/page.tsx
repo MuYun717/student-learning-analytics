@@ -1,109 +1,241 @@
 "use client";
-import { useState } from "react";
-import { Table, Input, Button, Space, Modal, Form, message } from "antd";
-import { SearchOutlined, PlusOutlined, DownloadOutlined, UploadOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import { Table, Input, Button, Space, Modal, Form, message, Card } from "antd";
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-
-// 模拟教师数据
-const mockTeachers = [
-  { id: 1, name: "张三", age: 30, subject: "数学", email: "zhangsan@example.com" },
-  { id: 2, name: "李四", age: 35, subject: "英语", email: "lisi@example.com" },
-  { id: 3, name: "王五", age: 40, subject: "物理", email: "wangwu@example.com" },
-];
+import { Teacher } from "@/types";
+import { teacherAPI } from "@/lib/api";
 
 const TeachersPage = () => {
-  const [teachers, setTeachers] = useState(mockTeachers);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
+
+  // 获取教师数据
+  const fetchTeachers = async () => {
+    try {
+      setLoading(true);
+      const data = await teacherAPI.getAll();
+      setTeachers(data);
+    } catch (error) {
+      message.error("获取教师数据失败");
+      console.error("获取教师数据失败:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
 
   const showModal = () => {
     setIsModalVisible(true);
     form.resetFields();
   };    
 
-  const handleOk = () => {
-    form.validateFields().then((values) => {
-      setTeachers([...teachers, { id: teachers.length + 1, ...values }]);
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      if (values.name) {
+        // 编辑
+        await teacherAPI.update(values.name, values);
+        message.success("更新成功");
+      } else {
+        // 新增
+        await teacherAPI.create(values);
+        message.success("添加成功");
+      }
       setIsModalVisible(false);
-      message.success('教师信息添加成功');
-    });
+      fetchTeachers(); // 重新获取教师列表
+    } catch (error) {
+      message.error("操作失败");
+      console.error("操作失败:", error);
+    }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
   };
 
-  const handleSearch = (value: string) => {
-    const filteredTeachers = mockTeachers.filter((teacher) =>
-      teacher.name.includes(value)
-    );
-    setTeachers(filteredTeachers);
+  const handleDelete = async (id: string) => {
+    try {
+      await teacherAPI.delete(id);
+      message.success("删除成功");
+      fetchTeachers(); // 重新获取教师列表
+    } catch (error) {
+      message.error("删除失败");
+      console.error("删除失败:", error);
+    }
   };
 
-  const handleExport = () => {
-    message.info('导出功能待实现');
+  const handleEdit = (record: Teacher) => {
+    form.setFieldsValue(record);
+    setIsModalVisible(true);
   };
 
-  const handleImport = () => {
-    message.info('导入功能待实现');
-  };
+  // 筛选教师
+  const filteredTeachers = teachers.filter(teacher =>
+    teacher.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    teacher.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+    teacher.department?.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: '姓名', dataIndex: 'name', key: 'name' },
-    { title: '年龄', dataIndex: 'age', key: 'age' },
-    { title: '学科', dataIndex: 'subject', key: 'subject' },
-    { title: '邮箱', dataIndex: 'email', key: 'email' },
+    { 
+      title: '姓名', 
+      dataIndex: 'name', 
+      key: 'name',
+      sorter: (a: Teacher, b: Teacher) => a.name.localeCompare(b.name)
+    },
+    { 
+      title: '职称', 
+      dataIndex: 'title', 
+      key: 'title',
+      sorter: (a: Teacher, b: Teacher) => {
+        const titleA = a.title || '';
+        const titleB = b.title || '';
+        return titleA.localeCompare(titleB);
+      }
+    },
+    { 
+      title: '院系', 
+      dataIndex: 'department', 
+      key: 'department',
+      sorter: (a: Teacher, b: Teacher) => {
+        const deptA = a.department || '';
+        const deptB = b.department || '';
+        return deptA.localeCompare(deptB);
+      }
+    },
+    { 
+      title: '邮箱', 
+      dataIndex: 'email', 
+      key: 'email' 
+    },
+    { 
+      title: '联系电话', 
+      dataIndex: 'phoneNumber', 
+      key: 'phoneNumber' 
+    },
+    {
+      title: '操作',
+      key: 'action',
+      render: (_: any, record: Teacher) => (
+        <Space size="middle">
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            编辑
+          </Button>
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              Modal.confirm({
+                title: "确定要删除这个教师吗？",
+                content: "删除后无法恢复，请谨慎操作",
+                okText: "确定",
+                cancelText: "取消",
+                onOk: () => handleDelete(record.id)
+              });
+            }}
+          >
+            删除
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">教师管理</h2>
-          <Space>
-            <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-              添加教师
-            </Button>
-          <Button icon={<DownloadOutlined />} onClick={handleExport}>
-              导出
-            </Button>
-            <Button icon={<UploadOutlined />} onClick={handleImport}>
-              导入
-            </Button>
-          </Space>
+      <Card>
+        <div className="flex justify-between mb-4">
+          <Input
+            placeholder="搜索教师姓名、邮箱或院系"
+            prefix={<SearchOutlined />}
+            style={{ width: 300 }}
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={showModal}
+          >
+            添加教师
+          </Button>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <Input.Search
-            placeholder="搜索教师姓名"
-            onSearch={handleSearch}
-            enterButton={<SearchOutlined />}
-            style={{ width: 300 }}
-          />
-        </div>
-        <Table columns={columns} dataSource={teachers} rowKey="id" />
+        <Table
+          columns={columns}
+          dataSource={filteredTeachers}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: 10 }}
+        />
+
         <Modal
-          title="添加教师信息"
-          visible={isModalVisible}
+          title={form.getFieldValue("id") ? "编辑教师" : "添加教师"}
+          open={isModalVisible}
           onOk={handleOk}
           onCancel={handleCancel}
+          destroyOnClose
         >
-          <Form form={form} layout="vertical">
-            <Form.Item name="name" label="姓名" rules={[{ required: true }]}>
+          <Form
+            form={form}
+            layout="vertical"
+            preserve={false}
+          >
+            <Form.Item name="id" hidden>
               <Input />
             </Form.Item>
-            <Form.Item name="age" label="年龄" rules={[{ required: true }]}>
-              <Input type="number" />
-            </Form.Item>
-            <Form.Item name="subject" label="学科" rules={[{ required: true }]}>
+            <Form.Item
+              name="name"
+              label="姓名"
+              rules={[{ required: true, message: "请输入姓名" }]}
+            >
               <Input />
             </Form.Item>
-            <Form.Item name="email" label="邮箱" rules={[{ required: true, type: 'email' }]}>
+            <Form.Item
+              name="title"
+              label="职称"
+              rules={[{ required: true, message: "请输入职称" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="department"
+              label="院系"
+              rules={[{ required: true, message: "请输入院系" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="email"
+              label="邮箱"
+              rules={[
+                { required: true, message: "请输入邮箱" },
+                { type: "email", message: "请输入有效的邮箱地址" }
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="phoneNumber"
+              label="联系电话"
+              rules={[{ required: true, message: "请输入联系电话" }]}
+            >
               <Input />
             </Form.Item>
           </Form>
         </Modal>
-      </div>
+      </Card>
   );
 };
 
